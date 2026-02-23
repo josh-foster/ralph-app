@@ -11,6 +11,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import * as Sentry from '@sentry/tanstackstart-react'
 import { useState, useEffect } from 'react'
+import { env } from '../../env.js'
 
 export const Route = createFileRoute('/demo/sentry/testing')({
   component: RouteComponent,
@@ -289,7 +290,7 @@ function RouteComponent() {
 
   useEffect(() => {
     // Check if Sentry DSN environment variable is set
-    const hasDsn = !!import.meta.env.VITE_SENTRY_DSN
+    const hasDsn = !!env.VITE_SENTRY_DSN
     setSentryConfigured(hasDsn)
   }, [])
 
