@@ -2,7 +2,13 @@ import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
-import Header from '../components/Header'
+import { AppSidebar } from '../components/app-sidebar'
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '../components/ui/sidebar'
+import { Separator } from '../components/ui/separator'
 
 import ConvexProvider from '../integrations/convex/provider'
 
@@ -44,8 +50,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <ConvexProvider>
           <WorkOSProvider>
-            <Header />
-            {children}
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarInset>
+                <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 sticky top-0 left-0 right-0 z-50 bg-background">
+                  <SidebarTrigger className="-ml-1" />
+                  <Separator orientation="vertical" className="mr-2 h-4" />
+                  <span className="text-sm font-medium">
+                    TanStack Start Starter
+                  </span>
+                </header>
+                <main className="flex-1 p-4">{children}</main>
+              </SidebarInset>
+            </SidebarProvider>
             <TanStackDevtools
               config={{
                 position: 'bottom-right',

@@ -58,7 +58,7 @@ function ConvexTodos() {
   const totalCount = todos?.length || 0
 
   return (
-    <div className="bg-background flex min-h-screen items-center justify-center p-4">
+    <div className="bg-background flex h-full items-center justify-center p-4">
       <div className="w-full max-w-lg space-y-4">
         <Card>
           <CardHeader>
