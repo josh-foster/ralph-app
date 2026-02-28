@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { KanbanColumn, type KanbanColumnData } from './kanban-column'
+import type { KanbanCardData } from './kanban-card'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,13 +17,17 @@ import { IconPlus } from '@tabler/icons-react'
 
 interface KanbanBoardProps {
   columns: KanbanColumnData[]
+  cards: KanbanCardData[]
   onAddColumn?: (title: string) => void
+  onAddCard?: (columnId: string, title: string) => void
   className?: string
 }
 
 export function KanbanBoard({
   columns,
+  cards,
   onAddColumn,
+  onAddCard,
   className,
 }: KanbanBoardProps) {
   const [open, setOpen] = useState(false)
@@ -40,7 +45,12 @@ export function KanbanBoard({
   return (
     <div className={cn('flex gap-4 overflow-x-auto pb-4', className)}>
       {columns.map((column) => (
-        <KanbanColumn key={column._id} column={column} />
+        <KanbanColumn
+          key={column._id}
+          column={column}
+          cards={cards.filter((c) => c.columnId === column._id)}
+          onAddCard={onAddCard}
+        />
       ))}
 
       {onAddColumn && (

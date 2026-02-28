@@ -9,6 +9,7 @@
  */
 
 import type * as boards from "../boards.js";
+import type * as cards from "../cards.js";
 import type * as columns from "../columns.js";
 import type * as todos from "../todos.js";
 
@@ -20,6 +21,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   boards: typeof boards;
+  cards: typeof cards;
   columns: typeof columns;
   todos: typeof todos;
 }>;

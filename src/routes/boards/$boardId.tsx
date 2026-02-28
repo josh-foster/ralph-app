@@ -23,7 +23,9 @@ function BoardViewPage() {
   const typedBoardId = boardId as Id<'boards'>
   const board = useQuery(api.boards.get, { id: typedBoardId })
   const columns = useQuery(api.columns.list, { boardId: typedBoardId })
+  const cards = useQuery(api.cards.list, { boardId: typedBoardId })
   const createColumn = useMutation(api.columns.create)
+  const createCard = useMutation(api.cards.create)
 
   if (!board) {
     return (
@@ -60,7 +62,11 @@ function BoardViewPage() {
 
       <KanbanBoard
         columns={columns ?? []}
+        cards={cards ?? []}
         onAddColumn={(title) => createColumn({ boardId: typedBoardId, title })}
+        onAddCard={(columnId, title) =>
+          createCard({ columnId: columnId as Id<'columns'>, title })
+        }
       />
     </div>
   )
