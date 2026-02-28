@@ -14,5 +14,13 @@
 - Added 2 Convex tests: appending after existing columns, first column on empty board (`convex/columns.test.ts`)
 - Commit: 632e5fc
 
+## Issue #5: Card creation & display [DONE]
+- Added `convex/cards.ts` with `list` query (cards for a board, ordered by position) and `create` mutation (appends at end of column)
+- Added `convex/cards.test.ts` with 2 tests: card placement at end of column, cards listed in position order across columns
+- Created `KanbanCard` presentational component (`src/components/ui/kanban/kanban-card.tsx`) composing shadcn Card, no Convex imports
+- Updated `KanbanColumn` with cards display, "+" button, and add-card modal dialog
+- Updated `KanbanBoard` and board route container to pass cards data and `onAddCard` callback through
+- Commit: 50484f2
+
 ## Next up
 - Issue #4 continued: Column rename (click-to-rename header + `columns.rename` mutation + test)
