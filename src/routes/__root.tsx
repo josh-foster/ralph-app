@@ -8,7 +8,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '../components/ui/sidebar'
-import { Separator } from '../components/ui/separator'
 
 import ConvexProvider from '../integrations/convex/provider'
 
@@ -27,7 +26,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Ralph App',
       },
     ],
     links: [
@@ -55,10 +54,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               <SidebarInset>
                 <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 sticky top-0 left-0 right-0 z-50 bg-background">
                   <SidebarTrigger className="-ml-1" />
-                  <Separator orientation="vertical" className="mr-2 h-4" />
-                  <span className="text-sm font-medium">
-                    TanStack Start Starter
-                  </span>
+                  <span className="text-sm font-medium">Ralph App</span>
                 </header>
                 <main className="flex-1 p-4">{children}</main>
               </SidebarInset>
