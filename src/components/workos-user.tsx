@@ -7,6 +7,10 @@ export default function SignInButton({ large }: { large?: boolean }) {
     large ? 'px-6 py-3 text-base' : 'px-4 py-2 text-sm'
   } bg-blue-600 hover:bg-blue-700 text-white font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed`
 
+  if (isLoading) {
+    return null
+  }
+
   if (user) {
     return (
       <div className="flex flex-col gap-3">
