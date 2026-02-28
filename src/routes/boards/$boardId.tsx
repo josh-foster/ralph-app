@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuery } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 
 import { api } from '../../../convex/_generated/api'
 import { Id } from '../../../convex/_generated/dataModel'
@@ -20,12 +20,10 @@ export const Route = createFileRoute('/boards/$boardId')({
 
 function BoardViewPage() {
   const { boardId } = Route.useParams()
-  const board = useQuery(api.boards.get, {
-    id: boardId as Id<'boards'>,
-  })
-  const columns = useQuery(api.columns.list, {
-    boardId: boardId as Id<'boards'>,
-  })
+  const typedBoardId = boardId as Id<'boards'>
+  const board = useQuery(api.boards.get, { id: typedBoardId })
+  const columns = useQuery(api.columns.list, { boardId: typedBoardId })
+  const createColumn = useMutation(api.columns.create)
 
   if (!board) {
     return (
@@ -60,7 +58,10 @@ function BoardViewPage() {
 
       <h1 className="text-xl font-semibold">{board.title}</h1>
 
-      <KanbanBoard columns={columns ?? []} />
+      <KanbanBoard
+        columns={columns ?? []}
+        onAddColumn={(title) => createColumn({ boardId: typedBoardId, title })}
+      />
     </div>
   )
 }

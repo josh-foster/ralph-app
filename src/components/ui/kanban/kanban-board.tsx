@@ -1,18 +1,40 @@
+import { useState } from 'react'
 import { KanbanColumn, type KanbanColumnData } from './kanban-column'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { IconPlus } from '@tabler/icons-react'
 
 interface KanbanBoardProps {
   columns: KanbanColumnData[]
+  onAddColumn?: (title: string) => void
   className?: string
 }
 
-export function KanbanBoard({ columns, className }: KanbanBoardProps) {
-  if (columns.length === 0) {
-    return (
-      <p className="text-muted-foreground text-sm">
-        This board has no columns yet.
-      </p>
-    )
+export function KanbanBoard({
+  columns,
+  onAddColumn,
+  className,
+}: KanbanBoardProps) {
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState('')
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const trimmed = title.trim()
+    if (!trimmed) return
+    onAddColumn?.(trimmed)
+    setTitle('')
+    setOpen(false)
   }
 
   return (
@@ -20,6 +42,40 @@ export function KanbanBoard({ columns, className }: KanbanBoardProps) {
       {columns.map((column) => (
         <KanbanColumn key={column._id} column={column} />
       ))}
+
+      {onAddColumn && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="h-auto w-72 shrink-0 py-8">
+              <IconPlus className="mr-2 size-4" />
+              Add Column
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <form onSubmit={handleSubmit}>
+              <DialogHeader>
+                <DialogTitle>Add Column</DialogTitle>
+                <DialogDescription>
+                  Enter a title for the new column.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="py-4">
+                <Input
+                  placeholder="Column title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={!title.trim()}>
+                  Create
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }
