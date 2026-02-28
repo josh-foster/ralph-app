@@ -22,5 +22,13 @@
 - Updated `KanbanBoard` and board route container to pass cards data and `onAddCard` callback through
 - Commit: 50484f2
 
+## Issue #6: Card detail modal (edit & delete) [DONE]
+- Added `cards.update` mutation (title + description) and `cards.remove` mutation (deletes card, recalculates positions) in `convex/cards.ts`
+- Created `KanbanCardDetailModal` component (`src/components/ui/kanban/kanban-card-detail-modal.tsx`) with editable fields and AlertDialog delete confirmation
+- Updated card creation flow to support optional description (mutation args, add-card modal in `KanbanColumn`, route container wiring)
+- Fixed stale-state bug: modal remounts via `key={selectedCard?._id}` so each card gets fresh form state
+- Added 2 Convex tests in `convex/cards.test.ts`: update persists changes, delete maintains position order
+- Commit: c7d1688
+
 ## Next up
 - Issue #4 continued: Column rename (click-to-rename header + `columns.rename` mutation + test)
