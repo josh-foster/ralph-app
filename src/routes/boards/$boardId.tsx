@@ -28,7 +28,71 @@ function BoardViewPage() {
   const createCard = useMutation(api.cards.create)
   const updateCard = useMutation(api.cards.update)
   const deleteCard = useMutation(api.cards.remove)
-  const moveCard = useMutation(api.cards.move)
+  const moveCard = useMutation(api.cards.move).withOptimisticUpdate(
+    (localStore, args) => {
+      const currentCards = localStore.getQuery(api.cards.list, {
+        boardId: typedBoardId,
+      })
+      if (currentCards === undefined) return
+
+      const cardToMove = currentCards.find((c) => c._id === args.id)
+      if (!cardToMove) return
+
+      const isSameColumn = cardToMove.columnId === args.targetColumnId
+
+      if (isSameColumn) {
+        const columnCards = currentCards
+          .filter((c) => c.columnId === cardToMove.columnId)
+          .sort((a, b) => a.position - b.position)
+        const otherCards = currentCards.filter(
+          (c) => c.columnId !== cardToMove.columnId,
+        )
+        const withoutCard = columnCards.filter((c) => c._id !== args.id)
+        withoutCard.splice(args.position - 1, 0, { ...cardToMove })
+
+        localStore.setQuery(
+          api.cards.list,
+          { boardId: typedBoardId },
+          [
+            ...otherCards,
+            ...withoutCard.map((c, i) => ({ ...c, position: i + 1 })),
+          ].sort((a, b) => a.position - b.position),
+        )
+      } else {
+        const sourceCards = currentCards
+          .filter(
+            (c) => c.columnId === cardToMove.columnId && c._id !== args.id,
+          )
+          .sort((a, b) => a.position - b.position)
+          .map((c, i) => ({ ...c, position: i + 1 }))
+
+        const targetCards = currentCards
+          .filter((c) => c.columnId === args.targetColumnId)
+          .sort((a, b) => a.position - b.position)
+
+        const movedCard = { ...cardToMove, columnId: args.targetColumnId }
+        targetCards.splice(args.position - 1, 0, movedCard)
+        const reindexedTarget = targetCards.map((c, i) => ({
+          ...c,
+          position: i + 1,
+        }))
+
+        const otherCards = currentCards.filter(
+          (c) =>
+            c.columnId !== cardToMove.columnId &&
+            c.columnId !== args.targetColumnId,
+        )
+
+        localStore.setQuery(
+          api.cards.list,
+          { boardId: typedBoardId },
+          [...otherCards, ...sourceCards, ...reindexedTarget].sort(
+            (a, b) => a.position - b.position,
+          ),
+        )
+      }
+    },
+  )
 
   if (!board) {
     return (

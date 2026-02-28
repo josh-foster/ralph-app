@@ -1,4 +1,11 @@
 import { useState } from 'react'
+import { useDroppable } from '@dnd-kit/core'
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +23,41 @@ import {
 import { cn } from '@/lib/utils'
 import { IconPlus } from '@tabler/icons-react'
 import { KanbanCard, type KanbanCardData } from './kanban-card'
+
+function SortableKanbanCard({
+  card,
+  onClick,
+}: {
+  card: KanbanCardData
+  onClick?: (card: KanbanCardData) => void
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: card._id,
+    data: { type: 'card', card },
+  })
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.3 : 1,
+      }}
+      {...attributes}
+      {...listeners}
+    >
+      <KanbanCard card={card} onClick={onClick} />
+    </div>
+  )
+}
 
 export interface KanbanColumnData {
   _id: string
@@ -41,6 +83,11 @@ export function KanbanColumn({
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+
+  const { setNodeRef } = useDroppable({
+    id: column._id,
+    data: { type: 'column', column },
+  })
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -107,14 +154,23 @@ export function KanbanColumn({
           )}
         </div>
       </CardHeader>
-      <CardContent className="min-h-32 space-y-2 p-3">
-        {cards.length === 0 ? (
-          <p className="text-muted-foreground text-xs">No cards yet</p>
-        ) : (
-          cards.map((card) => (
-            <KanbanCard key={card._id} card={card} onClick={onCardClick} />
-          ))
-        )}
+      <CardContent ref={setNodeRef} className="min-h-32 space-y-2 p-3">
+        <SortableContext
+          items={cards.map((c) => c._id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {cards.length === 0 ? (
+            <p className="text-muted-foreground text-xs">No cards yet</p>
+          ) : (
+            cards.map((card) => (
+              <SortableKanbanCard
+                key={card._id}
+                card={card}
+                onClick={onCardClick}
+              />
+            ))
+          )}
+        </SortableContext>
       </CardContent>
     </Card>
   )
