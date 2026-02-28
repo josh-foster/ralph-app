@@ -1,0 +1,11 @@
+# Kanban Board Progress
+
+## Issue #3: Board navigation & view [DONE]
+- Fixed `columns.list` to sort by `position` field (was returning unsorted)
+- Created `KanbanBoard` and `KanbanColumn` presentational components in `src/components/ui/kanban/` (compose shadcn Card, no Convex imports)
+- Updated `src/routes/boards/$boardId.tsx` to query columns and render them via `KanbanBoard`, replacing the placeholder
+- Added Convex tests for `boards.get` (single board by ID) and `columns.list` (position ordering)
+- Commit: fccd04d
+
+## Next up
+- Issue #4 or Phase 2 work: Column CRUD (create, rename, delete, reorder) with UI and tests
