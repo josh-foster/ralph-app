@@ -7,5 +7,12 @@
 - Added Convex tests for `boards.get` (single board by ID) and `columns.list` (position ordering)
 - Commit: fccd04d
 
+## Issue #4: Column creation [DONE]
+- Added `columns.create` mutation that appends new column at max position + 1 (`convex/columns.ts`)
+- Added "Add Column" button + dialog to `KanbanBoard` presentational component (`src/components/ui/kanban/kanban-board.tsx`)
+- Wired `createColumn` mutation in board route container (`src/routes/boards/$boardId.tsx`)
+- Added 2 Convex tests: appending after existing columns, first column on empty board (`convex/columns.test.ts`)
+- Commit: 632e5fc
+
 ## Next up
-- Issue #4 or Phase 2 work: Column CRUD (create, rename, delete, reorder) with UI and tests
+- Issue #4 continued: Column rename (click-to-rename header + `columns.rename` mutation + test)
