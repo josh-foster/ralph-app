@@ -26,6 +26,8 @@ function BoardViewPage() {
   const cards = useQuery(api.cards.list, { boardId: typedBoardId })
   const createColumn = useMutation(api.columns.create)
   const createCard = useMutation(api.cards.create)
+  const updateCard = useMutation(api.cards.update)
+  const deleteCard = useMutation(api.cards.remove)
 
   if (!board) {
     return (
@@ -64,9 +66,17 @@ function BoardViewPage() {
         columns={columns ?? []}
         cards={cards ?? []}
         onAddColumn={(title) => createColumn({ boardId: typedBoardId, title })}
-        onAddCard={(columnId, title) =>
-          createCard({ columnId: columnId as Id<'columns'>, title })
+        onAddCard={(columnId, title, description) =>
+          createCard({
+            columnId: columnId as Id<'columns'>,
+            title,
+            description,
+          })
         }
+        onUpdateCard={(id, title, description) =>
+          updateCard({ id: id as Id<'cards'>, title, description })
+        }
+        onDeleteCard={(id) => deleteCard({ id: id as Id<'cards'> })}
       />
     </div>
   )

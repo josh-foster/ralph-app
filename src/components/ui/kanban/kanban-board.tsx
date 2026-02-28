@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { KanbanColumn, type KanbanColumnData } from './kanban-column'
 import type { KanbanCardData } from './kanban-card'
+import { KanbanCardDetailModal } from './kanban-card-detail-modal'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,7 +20,9 @@ interface KanbanBoardProps {
   columns: KanbanColumnData[]
   cards: KanbanCardData[]
   onAddColumn?: (title: string) => void
-  onAddCard?: (columnId: string, title: string) => void
+  onAddCard?: (columnId: string, title: string, description?: string) => void
+  onUpdateCard?: (id: string, title: string, description?: string) => void
+  onDeleteCard?: (id: string) => void
   className?: string
 }
 
@@ -28,10 +31,19 @@ export function KanbanBoard({
   cards,
   onAddColumn,
   onAddCard,
+  onUpdateCard,
+  onDeleteCard,
   className,
 }: KanbanBoardProps) {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
+  const [selectedCard, setSelectedCard] = useState<KanbanCardData | null>(null)
+  const [detailOpen, setDetailOpen] = useState(false)
+
+  function handleCardClick(card: KanbanCardData) {
+    setSelectedCard(card)
+    setDetailOpen(true)
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -50,8 +62,18 @@ export function KanbanBoard({
           column={column}
           cards={cards.filter((c) => c.columnId === column._id)}
           onAddCard={onAddCard}
+          onCardClick={handleCardClick}
         />
       ))}
+
+      <KanbanCardDetailModal
+        key={selectedCard?._id}
+        card={selectedCard}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onUpdate={onUpdateCard}
+        onDelete={onDeleteCard}
+      />
 
       {onAddColumn && (
         <Dialog open={open} onOpenChange={setOpen}>

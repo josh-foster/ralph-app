@@ -25,7 +25,11 @@ export const list = query({
 })
 
 export const create = mutation({
-  args: { columnId: v.id('columns'), title: v.string() },
+  args: {
+    columnId: v.id('columns'),
+    title: v.string(),
+    description: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query('cards')
@@ -39,8 +43,43 @@ export const create = mutation({
 
     return await ctx.db.insert('cards', {
       title: args.title,
+      description: args.description,
       columnId: args.columnId,
       position: maxPosition + 1,
     })
+  },
+})
+
+export const update = mutation({
+  args: {
+    id: v.id('cards'),
+    title: v.string(),
+    description: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, {
+      title: args.title,
+      description: args.description,
+    })
+  },
+})
+
+export const remove = mutation({
+  args: { id: v.id('cards') },
+  handler: async (ctx, args) => {
+    const card = await ctx.db.get(args.id)
+    if (!card) return
+
+    await ctx.db.delete(args.id)
+
+    const remaining = await ctx.db
+      .query('cards')
+      .withIndex('columnId', (q) => q.eq('columnId', card.columnId))
+      .collect()
+
+    const sorted = remaining.sort((a, b) => a.position - b.position)
+    for (let i = 0; i < sorted.length; i++) {
+      await ctx.db.patch(sorted[i]._id, { position: i + 1 })
+    }
   },
 })

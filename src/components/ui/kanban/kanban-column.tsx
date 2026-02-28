@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -24,7 +26,8 @@ export interface KanbanColumnData {
 interface KanbanColumnProps {
   column: KanbanColumnData
   cards: KanbanCardData[]
-  onAddCard?: (columnId: string, title: string) => void
+  onAddCard?: (columnId: string, title: string, description?: string) => void
+  onCardClick?: (card: KanbanCardData) => void
   className?: string
 }
 
@@ -32,17 +35,20 @@ export function KanbanColumn({
   column,
   cards,
   onAddCard,
+  onCardClick,
   className,
 }: KanbanColumnProps) {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const trimmed = title.trim()
     if (!trimmed) return
-    onAddCard?.(column._id, trimmed)
+    onAddCard?.(column._id, trimmed, description.trim() || undefined)
     setTitle('')
+    setDescription('')
     setOpen(false)
   }
 
@@ -63,16 +69,32 @@ export function KanbanColumn({
                   <DialogHeader>
                     <DialogTitle>Add Card</DialogTitle>
                     <DialogDescription>
-                      Enter a title for the new card.
+                      Enter details for the new card.
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="py-4">
-                    <Input
-                      placeholder="Card title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      autoFocus
-                    />
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="new-card-title">Title</Label>
+                      <Input
+                        id="new-card-title"
+                        placeholder="Card title"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        autoFocus
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-card-description">
+                        Description (optional)
+                      </Label>
+                      <Textarea
+                        id="new-card-description"
+                        placeholder="Add a description..."
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        rows={3}
+                      />
+                    </div>
                   </div>
                   <DialogFooter>
                     <Button type="submit" disabled={!title.trim()}>
@@ -89,7 +111,9 @@ export function KanbanColumn({
         {cards.length === 0 ? (
           <p className="text-muted-foreground text-xs">No cards yet</p>
         ) : (
-          cards.map((card) => <KanbanCard key={card._id} card={card} />)
+          cards.map((card) => (
+            <KanbanCard key={card._id} card={card} onClick={onCardClick} />
+          ))
         )}
       </CardContent>
     </Card>

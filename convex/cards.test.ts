@@ -58,3 +58,64 @@ describe('cards.list', () => {
     expect(col2Cards[0].title).toBe('Col2 Card A')
   })
 })
+
+describe('cards.update', () => {
+  it('persists title and description changes', async () => {
+    const t = convexTest(schema, modules)
+
+    const boardId = await t.mutation(api.boards.create, {
+      title: 'Test Board',
+      userId: 'user_123',
+    })
+
+    const columns = await t.query(api.columns.list, { boardId })
+    const columnId = columns[0]._id
+
+    const cardId = await t.mutation(api.cards.create, {
+      columnId,
+      title: 'Original Title',
+    })
+
+    await t.mutation(api.cards.update, {
+      id: cardId,
+      title: 'Updated Title',
+      description: 'A description',
+    })
+
+    const cards = await t.query(api.cards.list, { boardId })
+    const card = cards.find((c) => c._id === cardId)!
+    expect(card.title).toBe('Updated Title')
+    expect(card.description).toBe('A description')
+  })
+})
+
+describe('cards.delete', () => {
+  it('removes the card and remaining cards maintain position order', async () => {
+    const t = convexTest(schema, modules)
+
+    const boardId = await t.mutation(api.boards.create, {
+      title: 'Test Board',
+      userId: 'user_123',
+    })
+
+    const columns = await t.query(api.columns.list, { boardId })
+    const columnId = columns[0]._id
+
+    await t.mutation(api.cards.create, { columnId, title: 'Card A' })
+    const cardBId = await t.mutation(api.cards.create, {
+      columnId,
+      title: 'Card B',
+    })
+    await t.mutation(api.cards.create, { columnId, title: 'Card C' })
+
+    await t.mutation(api.cards.remove, { id: cardBId })
+
+    const cards = await t.query(api.cards.list, { boardId })
+    const columnCards = cards.filter((c) => c.columnId === columnId)
+    expect(columnCards).toHaveLength(2)
+    expect(columnCards[0].title).toBe('Card A')
+    expect(columnCards[0].position).toBe(1)
+    expect(columnCards[1].title).toBe('Card C')
+    expect(columnCards[1].position).toBe(2)
+  })
+})
