@@ -1,0 +1,64 @@
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useQuery } from 'convex/react'
+
+import { api } from '../../../convex/_generated/api'
+import { Id } from '../../../convex/_generated/dataModel'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
+
+export const Route = createFileRoute('/boards/$boardId')({
+  ssr: false,
+  component: BoardViewPage,
+})
+
+function BoardViewPage() {
+  const { boardId } = Route.useParams()
+  const board = useQuery(api.boards.get, {
+    id: boardId as Id<'boards'>,
+  })
+
+  if (!board) {
+    return (
+      <div className="flex flex-col items-center gap-2 py-12">
+        <div className="border-primary size-5 animate-spin rounded-full border-2 border-t-transparent" />
+        <p className="text-muted-foreground">Loading board...</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/">Home</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/boards">Boards</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{board.title}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      <h1 className="text-xl font-semibold">{board.title}</h1>
+
+      <p className="text-muted-foreground text-sm">
+        Board view coming in Phase 2 — columns will appear here.
+      </p>
+    </div>
+  )
+}

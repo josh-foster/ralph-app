@@ -1,0 +1,20 @@
+# Kanban Board Progress
+
+## Phase 1: Boards (Issue #2) — DONE
+- Added `boards`, `columns`, and `cards` tables to Convex schema with indexes
+- Created `convex/boards.ts` (create, list, get) — board creation auto-generates three default columns (To Do, In Progress, Done)
+- Created `convex/columns.ts` (list query by boardId)
+- Added convex-test + @edge-runtime/vm, configured vitest for edge-runtime environment
+- Wrote 3 tests: board creation with default columns, board listing by user, empty listing
+- Created board list page at `/boards` with "Create Board" dialog (presentational/container split)
+- Created board view placeholder at `/boards/$boardId` with breadcrumb navigation (Home > Boards > Board Name)
+- Added "Boards" entry to sidebar navigation with Columns3 icon
+- Installed shadcn Dialog component
+- Files: convex/schema.ts, convex/boards.ts, convex/columns.ts, convex/boards.test.ts, src/components/board-list.tsx, src/components/app-sidebar.tsx, src/routes/boards/index.tsx, src/routes/boards/$boardId.tsx, src/components/ui/dialog.tsx, vitest.config.ts
+
+## Phase 2: Columns (Issue #3) — NOT STARTED
+- Next: Column create/rename/delete/reorder Convex functions, board view rendering columns
+
+## Phase 3: Cards — NOT STARTED
+
+## Phase 4: Drag and Drop — NOT STARTED

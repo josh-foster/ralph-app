@@ -13,4 +13,8 @@ export default defineConfig({
       projects: ['./tsconfig.json'],
     }),
   ],
+  test: {
+    environmentMatchGlobs: [['convex/**', 'edge-runtime']],
+    server: { deps: { inline: ['convex-test'] } },
+  },
 })

@@ -27,6 +27,7 @@ Rules:
    - If implementing reveals missing prerequisite work, do the minimum prerequisite needed for _this_ task only.
 4. **Verify quickly** (run the smallest reasonable check: typecheck/tests/lint for touched area, if available).
 5. **Commit changes**.
+   - Before commiting any code ask human for confirmation to do so
    - Follow repo’s commit conventions if evident from `git log`.
    - Commit message should describe the completed task outcome.
 6. **Update `progress.txt`**:

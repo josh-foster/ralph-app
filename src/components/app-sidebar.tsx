@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Link } from '@tanstack/react-router'
-import { Home } from 'lucide-react'
+import { Home, Columns3 } from 'lucide-react'
 import WorkOSHeader from './workos-user'
 import {
   Sidebar,
@@ -20,6 +20,11 @@ const navMain = [
     title: 'Home',
     url: '/' as const,
     icon: Home,
+  },
+  {
+    title: 'Boards',
+    url: '/boards' as const,
+    icon: Columns3,
   },
 ]
 
