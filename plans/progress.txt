@@ -38,5 +38,13 @@
 - Added 2 Convex tests: cross-column move updates both columns' positions, within-column reorder updates positions correctly (`convex/cards.test.ts`)
 - Commit: 9f1f730
 
+## Issue #8: Card drag and drop [DONE]
+- Added `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities` as dependencies
+- Made cards sortable within columns (`SortableKanbanCard` with `useSortable`, `SortableContext` per column) and droppable across columns (`useDroppable` on column card areas) in `kanban-column.tsx`
+- Wrapped board in `DndContext` with `PointerSensor` (8px activation constraint), `KeyboardSensor`, `closestCorners` collision detection, and `DragOverlay` with rotated card clone in `kanban-board.tsx`
+- Added Convex optimistic update on `cards.move` mutation in `src/routes/boards/$boardId.tsx` to eliminate visual snap-back after drop
+- Manual "Move" action from slice 6 remains available alongside drag-and-drop
+- Commit: ef98e55
+
 ## Next up
 - Issue #4 continued: Column rename (click-to-rename header + `columns.rename` mutation + test)
