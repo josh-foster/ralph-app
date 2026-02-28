@@ -30,5 +30,13 @@
 - Added 2 Convex tests in `convex/cards.test.ts`: update persists changes, delete maintains position order
 - Commit: c7d1688
 
+## Issue #7: Card move (manual) [DONE]
+- Added `cards.move` mutation handling cross-column moves and within-column reorder with position recalculation (`convex/cards.ts`)
+- Created `KanbanCardMoveModal` component with column and position selectors (`src/components/ui/kanban/kanban-card-move-modal.tsx`)
+- Added "Move" button to card detail modal footer, transitions to move modal (`kanban-card-detail-modal.tsx`, `kanban-board.tsx`)
+- Wired `moveCard` mutation in board route container (`src/routes/boards/$boardId.tsx`)
+- Added 2 Convex tests: cross-column move updates both columns' positions, within-column reorder updates positions correctly (`convex/cards.test.ts`)
+- Commit: 9f1f730
+
 ## Next up
 - Issue #4 continued: Column rename (click-to-rename header + `columns.rename` mutation + test)
