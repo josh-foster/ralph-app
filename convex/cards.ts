@@ -83,3 +83,63 @@ export const remove = mutation({
     }
   },
 })
+
+export const move = mutation({
+  args: {
+    id: v.id('cards'),
+    targetColumnId: v.id('columns'),
+    position: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const card = await ctx.db.get(args.id)
+    if (!card) return
+
+    const sourceColumnId = card.columnId
+    const isSameColumn = sourceColumnId === args.targetColumnId
+
+    if (isSameColumn) {
+      const siblings = await ctx.db
+        .query('cards')
+        .withIndex('columnId', (q) => q.eq('columnId', sourceColumnId))
+        .collect()
+
+      const withoutCard = siblings
+        .filter((c) => c._id !== args.id)
+        .sort((a, b) => a.position - b.position)
+
+      withoutCard.splice(args.position - 1, 0, card)
+
+      for (let i = 0; i < withoutCard.length; i++) {
+        await ctx.db.patch(withoutCard[i]._id, { position: i + 1 })
+      }
+    } else {
+      const sourceCards = await ctx.db
+        .query('cards')
+        .withIndex('columnId', (q) => q.eq('columnId', sourceColumnId))
+        .collect()
+      const sourceWithout = sourceCards
+        .filter((c) => c._id !== args.id)
+        .sort((a, b) => a.position - b.position)
+      for (let i = 0; i < sourceWithout.length; i++) {
+        await ctx.db.patch(sourceWithout[i]._id, { position: i + 1 })
+      }
+
+      const targetCards = await ctx.db
+        .query('cards')
+        .withIndex('columnId', (q) => q.eq('columnId', args.targetColumnId))
+        .collect()
+      const targetSorted = targetCards.sort((a, b) => a.position - b.position)
+      targetSorted.splice(args.position - 1, 0, card)
+      for (let i = 0; i < targetSorted.length; i++) {
+        if (targetSorted[i]._id === args.id) {
+          await ctx.db.patch(args.id, {
+            columnId: args.targetColumnId,
+            position: i + 1,
+          })
+        } else {
+          await ctx.db.patch(targetSorted[i]._id, { position: i + 1 })
+        }
+      }
+    }
+  },
+})

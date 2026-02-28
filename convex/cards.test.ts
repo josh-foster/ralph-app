@@ -119,3 +119,84 @@ describe('cards.delete', () => {
     expect(columnCards[1].position).toBe(2)
   })
 })
+
+describe('cards.move', () => {
+  it('moves a card across columns and updates positions in both', async () => {
+    const t = convexTest(schema, modules)
+
+    const boardId = await t.mutation(api.boards.create, {
+      title: 'Test Board',
+      userId: 'user_123',
+    })
+
+    const columns = await t.query(api.columns.list, { boardId })
+    const col1 = columns[0]._id
+    const col2 = columns[1]._id
+
+    await t.mutation(api.cards.create, { columnId: col1, title: 'Card A' })
+    const cardBId = await t.mutation(api.cards.create, {
+      columnId: col1,
+      title: 'Card B',
+    })
+    await t.mutation(api.cards.create, { columnId: col1, title: 'Card C' })
+    await t.mutation(api.cards.create, { columnId: col2, title: 'Card D' })
+
+    await t.mutation(api.cards.move, {
+      id: cardBId,
+      targetColumnId: col2,
+      position: 1,
+    })
+
+    const cards = await t.query(api.cards.list, { boardId })
+    const col1Cards = cards.filter((c) => c.columnId === col1)
+    const col2Cards = cards.filter((c) => c.columnId === col2)
+
+    expect(col1Cards).toHaveLength(2)
+    expect(col1Cards[0].title).toBe('Card A')
+    expect(col1Cards[0].position).toBe(1)
+    expect(col1Cards[1].title).toBe('Card C')
+    expect(col1Cards[1].position).toBe(2)
+
+    expect(col2Cards).toHaveLength(2)
+    expect(col2Cards[0].title).toBe('Card B')
+    expect(col2Cards[0].position).toBe(1)
+    expect(col2Cards[1].title).toBe('Card D')
+    expect(col2Cards[1].position).toBe(2)
+  })
+
+  it('reorders a card within the same column', async () => {
+    const t = convexTest(schema, modules)
+
+    const boardId = await t.mutation(api.boards.create, {
+      title: 'Test Board',
+      userId: 'user_123',
+    })
+
+    const columns = await t.query(api.columns.list, { boardId })
+    const col1 = columns[0]._id
+
+    await t.mutation(api.cards.create, { columnId: col1, title: 'Card A' })
+    await t.mutation(api.cards.create, { columnId: col1, title: 'Card B' })
+    const cardCId = await t.mutation(api.cards.create, {
+      columnId: col1,
+      title: 'Card C',
+    })
+
+    await t.mutation(api.cards.move, {
+      id: cardCId,
+      targetColumnId: col1,
+      position: 1,
+    })
+
+    const cards = await t.query(api.cards.list, { boardId })
+    const col1Cards = cards.filter((c) => c.columnId === col1)
+
+    expect(col1Cards).toHaveLength(3)
+    expect(col1Cards[0].title).toBe('Card C')
+    expect(col1Cards[0].position).toBe(1)
+    expect(col1Cards[1].title).toBe('Card A')
+    expect(col1Cards[1].position).toBe(2)
+    expect(col1Cards[2].title).toBe('Card B')
+    expect(col1Cards[2].position).toBe(3)
+  })
+})

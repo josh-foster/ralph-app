@@ -28,6 +28,7 @@ function BoardViewPage() {
   const createCard = useMutation(api.cards.create)
   const updateCard = useMutation(api.cards.update)
   const deleteCard = useMutation(api.cards.remove)
+  const moveCard = useMutation(api.cards.move)
 
   if (!board) {
     return (
@@ -77,6 +78,13 @@ function BoardViewPage() {
           updateCard({ id: id as Id<'cards'>, title, description })
         }
         onDeleteCard={(id) => deleteCard({ id: id as Id<'cards'> })}
+        onMoveCard={(id, targetColumnId, position) =>
+          moveCard({
+            id: id as Id<'cards'>,
+            targetColumnId: targetColumnId as Id<'columns'>,
+            position,
+          })
+        }
       />
     </div>
   )

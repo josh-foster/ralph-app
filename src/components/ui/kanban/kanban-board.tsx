@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { KanbanColumn, type KanbanColumnData } from './kanban-column'
 import type { KanbanCardData } from './kanban-card'
 import { KanbanCardDetailModal } from './kanban-card-detail-modal'
+import { KanbanCardMoveModal } from './kanban-card-move-modal'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,6 +24,7 @@ interface KanbanBoardProps {
   onAddCard?: (columnId: string, title: string, description?: string) => void
   onUpdateCard?: (id: string, title: string, description?: string) => void
   onDeleteCard?: (id: string) => void
+  onMoveCard?: (id: string, targetColumnId: string, position: number) => void
   className?: string
 }
 
@@ -33,16 +35,23 @@ export function KanbanBoard({
   onAddCard,
   onUpdateCard,
   onDeleteCard,
+  onMoveCard,
   className,
 }: KanbanBoardProps) {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [selectedCard, setSelectedCard] = useState<KanbanCardData | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
+  const [moveOpen, setMoveOpen] = useState(false)
 
   function handleCardClick(card: KanbanCardData) {
     setSelectedCard(card)
     setDetailOpen(true)
+  }
+
+  function handleMoveClick() {
+    setDetailOpen(false)
+    setMoveOpen(true)
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -73,6 +82,17 @@ export function KanbanBoard({
         onOpenChange={setDetailOpen}
         onUpdate={onUpdateCard}
         onDelete={onDeleteCard}
+        onMoveClick={onMoveCard ? handleMoveClick : undefined}
+      />
+
+      <KanbanCardMoveModal
+        key={moveOpen ? selectedCard?._id : undefined}
+        card={selectedCard}
+        columns={columns}
+        cards={cards}
+        open={moveOpen}
+        onOpenChange={setMoveOpen}
+        onMove={onMoveCard}
       />
 
       {onAddColumn && (

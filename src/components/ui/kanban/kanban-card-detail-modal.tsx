@@ -29,6 +29,7 @@ interface KanbanCardDetailModalProps {
   onOpenChange: (open: boolean) => void
   onUpdate?: (id: string, title: string, description?: string) => void
   onDelete?: (id: string) => void
+  onMoveClick?: () => void
 }
 
 export function KanbanCardDetailModal({
@@ -37,6 +38,7 @@ export function KanbanCardDetailModal({
   onOpenChange,
   onUpdate,
   onDelete,
+  onMoveClick,
 }: KanbanCardDetailModalProps) {
   const [title, setTitle] = useState(card?.title ?? '')
   const [description, setDescription] = useState(card?.description ?? '')
@@ -103,9 +105,16 @@ export function KanbanCardDetailModal({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <Button onClick={handleSave} disabled={!title.trim()}>
-            Save
-          </Button>
+          <div className="flex gap-2">
+            {onMoveClick && (
+              <Button variant="outline" size="sm" onClick={onMoveClick}>
+                Move
+              </Button>
+            )}
+            <Button onClick={handleSave} disabled={!title.trim()}>
+              Save
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
