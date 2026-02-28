@@ -29,6 +29,46 @@ describe('boards.create', () => {
   })
 })
 
+describe('boards.get', () => {
+  it('returns a single board by ID', async () => {
+    const t = convexTest(schema, modules)
+
+    const boardId = await t.mutation(api.boards.create, {
+      title: 'Test Board',
+      userId: 'user_123',
+    })
+
+    const board = await t.query(api.boards.get, { id: boardId })
+    expect(board).not.toBeNull()
+    expect(board).toMatchObject({ title: 'Test Board', userId: 'user_123' })
+    expect(board!._id).toBe(boardId)
+  })
+})
+
+describe('columns.list', () => {
+  it('returns columns in position order', async () => {
+    const t = convexTest(schema, modules)
+
+    const boardId = await t.mutation(api.boards.create, {
+      title: 'Ordered Board',
+      userId: 'user_123',
+    })
+
+    const columns = await t.query(api.columns.list, { boardId })
+    expect(columns).toHaveLength(3)
+
+    for (let i = 1; i < columns.length; i++) {
+      expect(columns[i].position).toBeGreaterThan(columns[i - 1].position)
+    }
+
+    expect(columns.map((c) => c.title)).toEqual([
+      'To Do',
+      'In Progress',
+      'Done',
+    ])
+  })
+})
+
 describe('boards.list', () => {
   it('returns only boards belonging to the given user', async () => {
     const t = convexTest(schema, modules)

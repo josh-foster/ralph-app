@@ -11,6 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
+import { KanbanBoard } from '@/components/ui/kanban'
 
 export const Route = createFileRoute('/boards/$boardId')({
   ssr: false,
@@ -21,6 +22,9 @@ function BoardViewPage() {
   const { boardId } = Route.useParams()
   const board = useQuery(api.boards.get, {
     id: boardId as Id<'boards'>,
+  })
+  const columns = useQuery(api.columns.list, {
+    boardId: boardId as Id<'boards'>,
   })
 
   if (!board) {
@@ -56,9 +60,7 @@ function BoardViewPage() {
 
       <h1 className="text-xl font-semibold">{board.title}</h1>
 
-      <p className="text-muted-foreground text-sm">
-        Board view coming in Phase 2 — columns will appear here.
-      </p>
+      <KanbanBoard columns={columns ?? []} />
     </div>
   )
 }
