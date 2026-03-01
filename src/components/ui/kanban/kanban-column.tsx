@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { useDroppable } from '@dnd-kit/core'
+import { forwardRef, useState } from 'react'
 import {
   SortableContext,
   useSortable,
@@ -21,7 +20,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-import { IconPlus } from '@tabler/icons-react'
+import { IconGripVertical, IconPlus } from '@tabler/icons-react'
 import { KanbanCard, type KanbanCardData } from './kanban-card'
 
 function SortableKanbanCard({
@@ -70,108 +69,146 @@ interface KanbanColumnProps {
   cards: KanbanCardData[]
   onAddCard?: (columnId: string, title: string, description?: string) => void
   onCardClick?: (card: KanbanCardData) => void
+  dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>
   className?: string
 }
 
-export function KanbanColumn({
-  column,
-  cards,
-  onAddCard,
-  onCardClick,
-  className,
-}: KanbanColumnProps) {
-  const [open, setOpen] = useState(false)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
+export const KanbanColumn = forwardRef<HTMLDivElement, KanbanColumnProps>(
+  function KanbanColumn(
+    { column, cards, onAddCard, onCardClick, dragHandleProps, className },
+    ref,
+  ) {
+    const [open, setOpen] = useState(false)
+    const [title, setTitle] = useState('')
+    const [description, setDescription] = useState('')
 
-  const { setNodeRef } = useDroppable({
-    id: column._id,
-    data: { type: 'column', column },
+    function handleSubmit(e: React.FormEvent) {
+      e.preventDefault()
+      const trimmed = title.trim()
+      if (!trimmed) return
+      onAddCard?.(column._id, trimmed, description.trim() || undefined)
+      setTitle('')
+      setDescription('')
+      setOpen(false)
+    }
+
+    return (
+      <Card ref={ref} className={cn('min-h-0 w-72 flex-1 shrink-0', className)}>
+        <CardHeader className="border-b">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              {dragHandleProps && (
+                <button
+                  className="cursor-grab touch-none active:cursor-grabbing"
+                  {...dragHandleProps}
+                >
+                  <IconGripVertical className="text-muted-foreground size-4" />
+                </button>
+              )}
+              <CardTitle>{column.title}</CardTitle>
+            </div>
+            {onAddCard && (
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="size-7">
+                    <IconPlus className="size-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <form onSubmit={handleSubmit}>
+                    <DialogHeader>
+                      <DialogTitle>Add Card</DialogTitle>
+                      <DialogDescription>
+                        Enter details for the new card.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="new-card-title">Title</Label>
+                        <Input
+                          id="new-card-title"
+                          placeholder="Card title"
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          autoFocus
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="new-card-description">
+                          Description (optional)
+                        </Label>
+                        <Textarea
+                          id="new-card-description"
+                          placeholder="Add a description..."
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          rows={3}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button type="submit" disabled={!title.trim()}>
+                        Create
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
+          <SortableContext
+            items={cards.map((c) => c._id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {cards.length === 0 ? (
+              <p className="text-muted-foreground text-xs">No cards yet</p>
+            ) : (
+              cards.map((card) => (
+                <SortableKanbanCard
+                  key={card._id}
+                  card={card}
+                  onClick={onCardClick}
+                />
+              ))
+            )}
+          </SortableContext>
+        </CardContent>
+      </Card>
+    )
+  },
+)
+
+export function SortableKanbanColumn(
+  props: Omit<KanbanColumnProps, 'dragHandleProps'>,
+) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: props.column._id,
+    data: { type: 'column', column: props.column },
   })
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    const trimmed = title.trim()
-    if (!trimmed) return
-    onAddCard?.(column._id, trimmed, description.trim() || undefined)
-    setTitle('')
-    setDescription('')
-    setOpen(false)
-  }
-
   return (
-    <Card className={cn('w-72 shrink-0', className)}>
-      <CardHeader className="border-b">
-        <div className="flex items-center justify-between">
-          <CardTitle>{column.title}</CardTitle>
-          {onAddCard && (
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="size-7">
-                  <IconPlus className="size-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <form onSubmit={handleSubmit}>
-                  <DialogHeader>
-                    <DialogTitle>Add Card</DialogTitle>
-                    <DialogDescription>
-                      Enter details for the new card.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="new-card-title">Title</Label>
-                      <Input
-                        id="new-card-title"
-                        placeholder="Card title"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        autoFocus
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="new-card-description">
-                        Description (optional)
-                      </Label>
-                      <Textarea
-                        id="new-card-description"
-                        placeholder="Add a description..."
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        rows={3}
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit" disabled={!title.trim()}>
-                      Create
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent ref={setNodeRef} className="min-h-32 space-y-2 p-3">
-        <SortableContext
-          items={cards.map((c) => c._id)}
-          strategy={verticalListSortingStrategy}
-        >
-          {cards.length === 0 ? (
-            <p className="text-muted-foreground text-xs">No cards yet</p>
-          ) : (
-            cards.map((card) => (
-              <SortableKanbanCard
-                key={card._id}
-                card={card}
-                onClick={onCardClick}
-              />
-            ))
-          )}
-        </SortableContext>
-      </CardContent>
-    </Card>
+    <div
+      ref={setNodeRef}
+      className="flex flex-col"
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+      }}
+    >
+      <KanbanColumn
+        {...props}
+        dragHandleProps={{ ...attributes, ...listeners }}
+      />
+    </div>
   )
 }

@@ -32,3 +32,29 @@ export const create = mutation({
     })
   },
 })
+
+export const move = mutation({
+  args: {
+    id: v.id('columns'),
+    position: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const column = await ctx.db.get(args.id)
+    if (!column) return
+
+    const siblings = await ctx.db
+      .query('columns')
+      .withIndex('boardId', (q) => q.eq('boardId', column.boardId))
+      .collect()
+
+    const withoutColumn = siblings
+      .filter((c) => c._id !== args.id)
+      .sort((a, b) => a.position - b.position)
+
+    withoutColumn.splice(args.position - 1, 0, column)
+
+    for (let i = 0; i < withoutColumn.length; i++) {
+      await ctx.db.patch(withoutColumn[i]._id, { position: i + 1 })
+    }
+  },
+})

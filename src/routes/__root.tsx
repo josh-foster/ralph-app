@@ -49,14 +49,16 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <ConvexProvider>
           <WorkOSProvider>
-            <SidebarProvider>
+            <SidebarProvider className="h-svh overflow-hidden">
               <AppSidebar />
               <SidebarInset>
                 <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 sticky top-0 left-0 right-0 z-50 bg-background">
                   <SidebarTrigger className="-ml-1" />
                   <span className="text-sm font-medium">Ralph App</span>
                 </header>
-                <main className="flex-1 p-4">{children}</main>
+                <div className="min-h-0 flex-1 overflow-auto p-4">
+                  {children}
+                </div>
               </SidebarInset>
             </SidebarProvider>
             <TanStackDevtools

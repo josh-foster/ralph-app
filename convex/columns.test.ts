@@ -54,3 +54,98 @@ describe('columns.create', () => {
     expect(columns[0].position).toBe(1)
   })
 })
+
+describe('columns.move', () => {
+  it('moves a column to a new position and recalculates all positions', async () => {
+    const t = convexTest(schema, modules)
+
+    const boardId = await t.mutation(api.boards.create, {
+      title: 'Test Board',
+      userId: 'user_123',
+    })
+
+    // Default columns: To Do (1), In Progress (2), Done (3)
+    const before = await t.query(api.columns.list, { boardId })
+    expect(before.map((c) => c.title)).toEqual(['To Do', 'In Progress', 'Done'])
+
+    // Move "Done" (position 3) to position 1
+    await t.mutation(api.columns.move, {
+      id: before[2]._id,
+      position: 1,
+    })
+
+    const after = await t.query(api.columns.list, { boardId })
+    expect(after.map((c) => c.title)).toEqual(['Done', 'To Do', 'In Progress'])
+    expect(after.map((c) => c.position)).toEqual([1, 2, 3])
+  })
+
+  it('moves a column forward and preserves contiguous positions', async () => {
+    const t = convexTest(schema, modules)
+
+    const boardId = await t.mutation(api.boards.create, {
+      title: 'Test Board',
+      userId: 'user_123',
+    })
+
+    const before = await t.query(api.columns.list, { boardId })
+
+    // Move "To Do" (position 1) to position 3
+    await t.mutation(api.columns.move, {
+      id: before[0]._id,
+      position: 3,
+    })
+
+    const after = await t.query(api.columns.list, { boardId })
+    expect(after.map((c) => c.title)).toEqual(['In Progress', 'Done', 'To Do'])
+    expect(after.map((c) => c.position)).toEqual([1, 2, 3])
+  })
+
+  it('column order persists after multiple reorders', async () => {
+    const t = convexTest(schema, modules)
+
+    const boardId = await t.mutation(api.boards.create, {
+      title: 'Test Board',
+      userId: 'user_123',
+    })
+
+    await t.mutation(api.columns.create, { boardId, title: 'Review' })
+
+    // Now: To Do (1), In Progress (2), Done (3), Review (4)
+    const cols = await t.query(api.columns.list, { boardId })
+    expect(cols.map((c) => c.title)).toEqual([
+      'To Do',
+      'In Progress',
+      'Done',
+      'Review',
+    ])
+
+    // Move "Review" to position 2
+    await t.mutation(api.columns.move, {
+      id: cols[3]._id,
+      position: 2,
+    })
+
+    const afterFirst = await t.query(api.columns.list, { boardId })
+    expect(afterFirst.map((c) => c.title)).toEqual([
+      'To Do',
+      'Review',
+      'In Progress',
+      'Done',
+    ])
+
+    // Move "To Do" to position 4
+    await t.mutation(api.columns.move, {
+      id: afterFirst[0]._id,
+      position: 4,
+    })
+
+    const afterSecond = await t.query(api.columns.list, { boardId })
+    expect(afterSecond.map((c) => c.title)).toEqual([
+      'Review',
+      'In Progress',
+      'Done',
+      'To Do',
+    ])
+    expect(afterSecond.map((c) => c.position)).toEqual([1, 2, 3, 4])
+  })
+})

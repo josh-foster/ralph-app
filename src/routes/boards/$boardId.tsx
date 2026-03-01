@@ -28,6 +28,29 @@ function BoardViewPage() {
   const createCard = useMutation(api.cards.create)
   const updateCard = useMutation(api.cards.update)
   const deleteCard = useMutation(api.cards.remove)
+  const moveColumn = useMutation(api.columns.move).withOptimisticUpdate(
+    (localStore, args) => {
+      const currentColumns = localStore.getQuery(api.columns.list, {
+        boardId: typedBoardId,
+      })
+      if (currentColumns === undefined) return
+
+      const columnToMove = currentColumns.find((c) => c._id === args.id)
+      if (!columnToMove) return
+
+      const withoutColumn = currentColumns
+        .filter((c) => c._id !== args.id)
+        .sort((a, b) => a.position - b.position)
+
+      withoutColumn.splice(args.position - 1, 0, { ...columnToMove })
+
+      localStore.setQuery(
+        api.columns.list,
+        { boardId: typedBoardId },
+        withoutColumn.map((c, i) => ({ ...c, position: i + 1 })),
+      )
+    },
+  )
   const moveCard = useMutation(api.cards.move).withOptimisticUpdate(
     (localStore, args) => {
       const currentCards = localStore.getQuery(api.cards.list, {
@@ -104,15 +127,9 @@ function BoardViewPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full flex-col gap-6 overflow-hidden">
       <Breadcrumb>
         <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link to="/">Home</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
               <Link to="/boards">Boards</Link>
@@ -148,6 +165,9 @@ function BoardViewPage() {
             targetColumnId: targetColumnId as Id<'columns'>,
             position,
           })
+        }
+        onMoveColumn={(id, position) =>
+          moveColumn({ id: id as Id<'columns'>, position })
         }
       />
     </div>

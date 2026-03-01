@@ -10,8 +10,16 @@ import {
   type DragStartEvent,
   type DragEndEvent,
 } from '@dnd-kit/core'
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
-import { KanbanColumn, type KanbanColumnData } from './kanban-column'
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable'
+import {
+  KanbanColumn,
+  SortableKanbanColumn,
+  type KanbanColumnData,
+} from './kanban-column'
 import { KanbanCard, type KanbanCardData } from './kanban-card'
 import { KanbanCardDetailModal } from './kanban-card-detail-modal'
 import { KanbanCardMoveModal } from './kanban-card-move-modal'
@@ -37,6 +45,7 @@ interface KanbanBoardProps {
   onUpdateCard?: (id: string, title: string, description?: string) => void
   onDeleteCard?: (id: string) => void
   onMoveCard?: (id: string, targetColumnId: string, position: number) => void
+  onMoveColumn?: (id: string, position: number) => void
   className?: string
 }
 
@@ -48,6 +57,7 @@ export function KanbanBoard({
   onUpdateCard,
   onDeleteCard,
   onMoveCard,
+  onMoveColumn,
   className,
 }: KanbanBoardProps) {
   const [open, setOpen] = useState(false)
@@ -56,6 +66,9 @@ export function KanbanBoard({
   const [detailOpen, setDetailOpen] = useState(false)
   const [moveOpen, setMoveOpen] = useState(false)
   const [activeCard, setActiveCard] = useState<KanbanCardData | null>(null)
+  const [activeColumn, setActiveColumn] = useState<KanbanColumnData | null>(
+    null,
+  )
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -77,11 +90,38 @@ export function KanbanBoard({
   }
 
   function handleDragStart(event: DragStartEvent) {
-    const card = cards.find((c) => c._id === event.active.id)
-    if (card) setActiveCard(card)
+    const activeType = event.active.data.current?.type
+    if (activeType === 'column') {
+      const column = columns.find((c) => c._id === event.active.id)
+      if (column) setActiveColumn(column)
+    } else {
+      const card = cards.find((c) => c._id === event.active.id)
+      if (card) setActiveCard(card)
+    }
   }
 
   function handleDragEnd(event: DragEndEvent) {
+    const activeType = event.active.data.current?.type
+
+    if (activeType === 'column') {
+      setActiveColumn(null)
+      const { active, over } = event
+      if (!over || active.id === over.id) return
+
+      const overData = over.data.current
+      if (overData?.type === 'column') {
+        const overColumn = overData.column as KanbanColumnData
+        const sortedColumns = [...columns].sort(
+          (a, b) => a.position - b.position,
+        )
+        const overIndex = sortedColumns.findIndex(
+          (c) => c._id === overColumn._id,
+        )
+        onMoveColumn?.(active.id as string, overIndex + 1)
+      }
+      return
+    }
+
     setActiveCard(null)
 
     const { active, over } = event
@@ -129,16 +169,26 @@ export function KanbanBoard({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className={cn('flex gap-4 overflow-x-auto p-2', className)}>
-        {columns.map((column) => (
-          <KanbanColumn
-            key={column._id}
-            column={column}
-            cards={cards.filter((c) => c.columnId === column._id)}
-            onAddCard={onAddCard}
-            onCardClick={handleCardClick}
-          />
-        ))}
+      <div
+        className={cn(
+          'flex min-h-0 flex-1 gap-4 overflow-x-auto p-2',
+          className,
+        )}
+      >
+        <SortableContext
+          items={columns.map((c) => c._id)}
+          strategy={horizontalListSortingStrategy}
+        >
+          {columns.map((column) => (
+            <SortableKanbanColumn
+              key={column._id}
+              column={column}
+              cards={cards.filter((c) => c.columnId === column._id)}
+              onAddCard={onAddCard}
+              onCardClick={handleCardClick}
+            />
+          ))}
+        </SortableContext>
 
         <KanbanCardDetailModal
           key={selectedCard?._id}
@@ -199,6 +249,15 @@ export function KanbanBoard({
         {activeCard ? (
           <div className="w-64">
             <KanbanCard card={activeCard} className="rotate-3 shadow-xl" />
+          </div>
+        ) : null}
+        {activeColumn ? (
+          <div className="w-72">
+            <KanbanColumn
+              column={activeColumn}
+              cards={cards.filter((c) => c.columnId === activeColumn._id)}
+              className="rotate-2 shadow-xl"
+            />
           </div>
         ) : null}
       </DragOverlay>
