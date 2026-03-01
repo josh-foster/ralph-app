@@ -69,6 +69,64 @@ describe('columns.list', () => {
   })
 })
 
+describe('boards.remove', () => {
+  it('cascade deletes board, all columns, and all cards', async () => {
+    const t = convexTest(schema, modules)
+
+    const boardId = await t.mutation(api.boards.create, {
+      title: 'Doomed Board',
+      userId: 'user_123',
+    })
+
+    const columns = await t.query(api.columns.list, { boardId })
+    await t.mutation(api.cards.create, {
+      columnId: columns[0]._id,
+      title: 'Card A',
+    })
+    await t.mutation(api.cards.create, {
+      columnId: columns[0]._id,
+      title: 'Card B',
+    })
+    await t.mutation(api.cards.create, {
+      columnId: columns[1]._id,
+      title: 'Card C',
+    })
+
+    await t.mutation(api.boards.remove, { id: boardId })
+
+    const board = await t.query(api.boards.get, { id: boardId })
+    expect(board).toBeNull()
+
+    const remainingColumns = await t.query(api.columns.list, { boardId })
+    expect(remainingColumns).toHaveLength(0)
+
+    const remainingCards = await t.query(api.cards.list, { boardId })
+    expect(remainingCards).toHaveLength(0)
+  })
+
+  it('does not affect other boards when deleting one', async () => {
+    const t = convexTest(schema, modules)
+
+    const boardA = await t.mutation(api.boards.create, {
+      title: 'Keep Me',
+      userId: 'user_123',
+    })
+    const boardB = await t.mutation(api.boards.create, {
+      title: 'Delete Me',
+      userId: 'user_123',
+    })
+
+    await t.mutation(api.boards.remove, { id: boardB })
+
+    const boards = await t.query(api.boards.list, { userId: 'user_123' })
+    expect(boards).toHaveLength(1)
+    expect(boards[0].title).toBe('Keep Me')
+
+    const columnsA = await t.query(api.columns.list, { boardId: boardA })
+    expect(columnsA).toHaveLength(3)
+  })
+})
+
 describe('boards.list', () => {
   it('returns only boards belonging to the given user', async () => {
     const t = convexTest(schema, modules)

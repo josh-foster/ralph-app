@@ -20,6 +20,31 @@ export const get = query({
   },
 })
 
+export const remove = mutation({
+  args: { id: v.id('boards') },
+  handler: async (ctx, args) => {
+    const columns = await ctx.db
+      .query('columns')
+      .withIndex('boardId', (q) => q.eq('boardId', args.id))
+      .collect()
+
+    for (const column of columns) {
+      const cards = await ctx.db
+        .query('cards')
+        .withIndex('columnId', (q) => q.eq('columnId', column._id))
+        .collect()
+
+      for (const card of cards) {
+        await ctx.db.delete(card._id)
+      }
+
+      await ctx.db.delete(column._id)
+    }
+
+    await ctx.db.delete(args.id)
+  },
+})
+
 export const create = mutation({
   args: { title: v.string(), userId: v.string() },
   handler: async (ctx, args) => {

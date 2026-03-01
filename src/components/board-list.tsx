@@ -1,7 +1,18 @@
-import { IconPlus, IconColumns3 } from '@tabler/icons-react'
+import { IconPlus, IconColumns3, IconTrash } from '@tabler/icons-react'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 interface Board {
   _id: string
@@ -11,9 +22,14 @@ interface Board {
 interface BoardListProps {
   boards: Board[] | undefined
   onCreateClick: () => void
+  onDeleteBoard: (boardId: string) => void
 }
 
-export function BoardList({ boards, onCreateClick }: BoardListProps) {
+export function BoardList({
+  boards,
+  onCreateClick,
+  onDeleteBoard,
+}: BoardListProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -40,18 +56,48 @@ export function BoardList({ boards, onCreateClick }: BoardListProps) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {boards.map((board) => (
-            <Link
-              key={board._id}
-              to="/boards/$boardId"
-              params={{ boardId: board._id }}
-              className="block"
-            >
-              <Card className="transition-colors hover:border-foreground/20">
-                <CardHeader>
-                  <CardTitle>{board.title}</CardTitle>
-                </CardHeader>
-              </Card>
-            </Link>
+            <div key={board._id} className="relative">
+              <Link
+                to="/boards/$boardId"
+                params={{ boardId: board._id }}
+                className="block"
+              >
+                <Card className="transition-colors hover:border-foreground/20">
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>{board.title}</CardTitle>
+                  </CardHeader>
+                </Card>
+              </Link>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive absolute top-3 right-3 size-8"
+                  >
+                    <IconTrash className="size-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete board?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete the board and all its columns
+                      and cards. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      variant="destructive"
+                      onClick={() => onDeleteBoard(board._id)}
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           ))}
         </div>
       )}

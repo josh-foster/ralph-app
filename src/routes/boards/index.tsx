@@ -4,6 +4,7 @@ import { useQuery, useMutation } from 'convex/react'
 import { useAuth } from '@workos-inc/authkit-react'
 
 import { api } from '../../../convex/_generated/api'
+import type { Id } from '../../../convex/_generated/dataModel'
 import { BoardList } from '@/components/board-list'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,6 +32,7 @@ function BoardsPage() {
   )
 
   const createBoard = useMutation(api.boards.create)
+  const deleteBoard = useMutation(api.boards.remove)
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [newTitle, setNewTitle] = useState('')
@@ -46,9 +48,20 @@ function BoardsPage() {
     navigate({ to: '/boards/$boardId', params: { boardId } })
   }, [createBoard, newTitle, user?.id, navigate])
 
+  const handleDelete = useCallback(
+    async (boardId: string) => {
+      await deleteBoard({ id: boardId as Id<'boards'> })
+    },
+    [deleteBoard],
+  )
+
   return (
     <div className="mx-auto max-w-4xl">
-      <BoardList boards={boards} onCreateClick={() => setDialogOpen(true)} />
+      <BoardList
+        boards={boards}
+        onCreateClick={() => setDialogOpen(true)}
+        onDeleteBoard={handleDelete}
+      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
