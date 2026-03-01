@@ -46,5 +46,12 @@
 - Manual "Move" action from slice 6 remains available alongside drag-and-drop
 - Commit: ef98e55
 
+## Issue #9: Board deletion [DONE]
+- Added `boards.remove` mutation with cascade logic: deletes all cards in each column, then all columns, then the board (`convex/boards.ts`)
+- Added trash icon button with AlertDialog confirmation on each board card in `BoardList` (`src/components/board-list.tsx`)
+- Wired `deleteBoard` mutation in boards route container (`src/routes/boards/index.tsx`)
+- Added 2 Convex tests: cascade delete removes board + columns + cards; deleting one board doesn't affect others (`convex/boards.test.ts`)
+- Commit: 2d479b9
+
 ## Next up
-- Issue #4 continued: Column rename (click-to-rename header + `columns.rename` mutation + test)
+- Column rename (click-to-rename header + `columns.rename` mutation + test)
