@@ -11,12 +11,12 @@ Single-package TanStack Start (React SSR) app with Cloudflare Workers deployment
 A `.env.local` file is required with at minimum these three variables (the app crashes without them due to `requireEnv()` calls in the Convex and WorkOS providers):
 
 ```
-VITE_CONVEX_URL=https://placeholder-convex.convex.cloud
-VITE_WORKOS_CLIENT_ID=client_placeholder
-VITE_WORKOS_API_HOSTNAME=api.workos.com
+VITE_CONVEX_URL=<from env var or secret>
+VITE_WORKOS_CLIENT_ID=<from env var or secret>
+VITE_WORKOS_API_HOSTNAME=<from env var or secret>
 ```
 
-Placeholder values allow the app to boot; Convex/WorkOS features won't function without real credentials. Sentry is optional and degrades gracefully.
+These secrets are injected as environment variables in Cloud Agent environments. To create `.env.local`, write the env var values into it (the file is gitignored via `*.local`). Placeholder values allow the app to boot but Convex/WorkOS features won't function without real credentials. Sentry is optional and degrades gracefully.
 
 ### Commands
 
